@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MC服务器集群 - mcfuwuqi.cc.cd</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            color: #fff;
+            background: #0b0d0a;
+            overflow-x: hidden;
+        }
+
+        /* 像素草地方块背景 */
+        .hero {
+            position: relative;
+            padding: 120px 20px 100px;
+            text-align: center;
+            background:
+                linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.75)),
+                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><rect width='120' height='70' fill='%234a9c2d'/><rect y='70' width='120' height='50' fill='%238b5a2b'/><rect x='10' y='20' width='8' height='8' fill='%236fbf46'/><rect x='40' y='35' width='10' height='10' fill='%2355a328'/><rect x='75' y='15' width='12' height='12' fill='%237ccf52'/><rect x='95' y='40' width='8' height='8' fill='%234a9c2d'/><rect x='25' y='50' width='9' height='9' fill='%236fbf46'/></svg>") repeat;
+            border-bottom: 6px solid #5b9c38;
+        }
+
+        .hero h1 {
+            font-size: 64px;
+            color: #b7f186;
+            text-shadow:
+                4px 4px 0 #111,
+                -2px -2px 0 #2f6b22;
+            letter-spacing: 4px;
+            margin-bottom: 16px;
+        }
+
+        .hero p.subtitle {
+            font-size: 22px;
+            color: #d7ffb3;
+            background: rgba(0,0,0,0.45);
+            display: inline-block;
+            padding: 10px 24px;
+            border: 2px solid #72b845;
+            border-radius: 4px;
+        }
+
+        .server-quick {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .quick-card {
+            background: rgba(0,0,0,0.55);
+            border: 2px solid #3a7d24;
+            border-radius: 8px;
+            padding: 14px 20px;
+            min-width: 240px;
+            text-align: left;
+        }
+
+        .quick-card .tag {
+            color: #9ce269;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .quick-card .addr {
+            font-size: 20px;
+            color: #fff;
+            word-break: break-all;
+        }
+
+        .quick-card button {
+            margin-top: 10px;
+            background: #5b9c38;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .quick-card button:hover {
+            background: #72b845;
+        }
+
+        /* 主体容器 */
+        .container {
+            max-width: 1100px;
+            margin: 60px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: linear-gradient(180deg, #171c14, #0f120d);
+            border: 1px solid #2b3a22;
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+        }
+
+        .card h2 {
+            font-size: 26px;
+            color: #8ed957;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px dashed #3a5a28;
+        }
+
+        /* 服务器列表 */
+        .server-list {
+            grid-column: 1 / -1;
+        }
+
+        .server-item {
+            background: #1a2216;
+            border-left: 5px solid #72b845;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .server-item h3 {
+            color: #b7f186;
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+
+        .server-item p {
+            color: #cfd8c4;
+            font-size: 14px;
+        }
+
+        .server-desc {
+            width: 100%;
+            margin-top:12px;
+            color:#e8f5dc;
+            line-height:1.6;
+        }
+
+        .map-desc {
+            width:100%;
+            margin-top:10px;
+            color:#bfe89c;
+            line-height:1.6;
+            background:#141a11;
+            padding:12px;
+            border-radius:6px;
+        }
+
+        .address-box {
+            background: #000;
+            border: 2px solid #5b9c38;
+            padding: 10px 16px;
+            border-radius: 6px;
+            text-align: center;
+            min-width: 240px;
+        }
+
+        .address-box .label {
+            font-size: 12px;
+            color: #9ce269;
+            margin-bottom: 4px;
+        }
+
+        .address-box .addr {
+            font-size: 20px;
+            color: #fff;
+            word-break: break-all;
+        }
+
+        .address-box .port {
+            font-size:14px;
+            color:#ffd479;
+            margin-top:4px;
+        }
+
+        .address-box button {
+            margin-top: 8px;
+            background: #5b9c38;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .address-box button:hover {
+            background: #72b845;
+        }
+
+        /* 列表样式 */
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            padding: 10px 0;
+            padding-left: 24px;
+            position: relative;
+            color: #e8f5dc;
+            border-bottom: 1px dashed #243019;
+        }
+
+        ul li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #8ed957;
+        }
+
+        .tip {
+            background: #2c2410;
+            border-left: 4px solid #e6b849;
+            padding: 14px;
+            margin-top: 14px;
+            border-radius: 6px;
+            color: #ffe9a8;
+            font-size: 14px;
+        }
+
+        /* 底部 */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #889977;
+            border-top: 2px solid #243019;
+            margin-top: 60px;
+            background: #0a0c09;
+        }
+
+        /* 响应式 */
+        @media (max-width: 820px) {
+            .hero h1 {
+                font-size: 42px;
+            }
+
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .server-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .address-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="hero">
+    <h1>我的世界多服集群官网</h1>
+    <p class="subtitle">Java 1.21.11 纯净生存｜基岩 1.26.21.01 最新版体验（含动作优化分支）｜基岩 1.19 怀旧原版</p>
+
+    <div class="server-quick">
+        <div class="quick-card">
+            <div class="tag">🌿 Java 自建纯净生存服（麦草联机）</div>
+            <div class="addr">mcfuwuqi.cc.cd:19624</div>
+            <p>备用IP：<span style="color:#ffd479">124.248.69.26</span>:19624</p>
+            <p>Paper优化｜4G运行内存 | 纯净无魔改</p>
+            <button onclick="copyText('mcfuwuqi.cc.cd:19624', 'Java域名地址已复制')">复制域名地址</button>
+            <button onclick="copyText('124.248.69.26:19624', 'Java备用IP地址已复制')">复制备用IP</button>
+        </div>
+        <div class="quick-card">
+            <div class="tag">🎈 基岩最新体验服 1.26.21.01（支持动作优化）</div>
+            <div class="addr">play.mcfuwuqi.cc.cd</div>
+            <p>端口：47110｜原版最新内容｜可加载动作优化包</p>
+            <button onclick="copyText('play.mcfuwuqi.cc.cd', '新版基岩地址已复制')">复制地址</button>
+        </div>
+        <div class="quick-card">
+            <div class="tag">🏛️ 基岩怀旧原版服 1.19</div>
+            <div class="addr">www.mcfuwuqi.cc.cd</div>
+            <p>端口：42997｜经典幽匿世界｜怀旧原汁原味</p>
+            <button onclick="copyText('www.mcfuwuqi.cc.cd', '旧版基岩地址已复制')">复制地址</button>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+
+    <section class="card server-list">
+        <h2>🖥️ 服务器详细介绍</h2>
+
+        <div class="server-item">
+            <div>
+                <h3>① Java版 1.21.11 自建Paper纯净生存服【麦草联机】</h3>
+                <p>服务端：Paper 1.21.11｜本地高性能自建｜公网可连｜双重连接地址</p>
+                <div class="server-desc">
+                    本服务器为个人自建高性能纯净生存服，采用Paper优化核心，大幅提升游戏帧率与TPS稳定性，4G内存稳定运行。服务器采用AuthMe独立密码登录系统，保障每位玩家账号安全，杜绝盗号、抢号问题。仅安装基础辅助插件，含回家、传送、好友聊天、服务器性能优化功能，不添加任何破坏原版平衡的模组与插件。全程原版生存、原版建造、原版探索，适合长期游玩、存档稳定、定期自动备份。支持域名与备用IP双线路连接，域名解析异常时可直接使用备用IP直连进入游戏。
+                </div>
+                <div class="map-desc">
+                    🗺️ 服务器地图信息：种子 <span style="color:#ffd479">2752162743355846020</span>，原版1.21.11自然生成完整世界。无固定强制出生点，玩家首次进入随机自然出生。世界无人工修改、无预设建筑、无地形篡改，所有洞穴、试炼密室、远古城市、繁茂洞穴等新版本结构完整自然生成。区块按需加载，无预生成卡顿，世界无边界限制，支持无限探索，存档长期稳定备份。
+                </div>
+            </div>
+            <div class="address-box">
+                <div class="label">Java服主地址（推荐）</div>
+                <div class="addr">mcfuwuqi.cc.cd</div>
+                <div class="port">端口：19624</div>
+                <div style="margin-top:8px;">
+                    <div class="label">备用应急IP地址</div>
+                    <div class="addr" style="font-size:16px;color:#ffd479">124.248.69.26</div>
+                    <div class="port">端口：19624</div>
+                </div>
+                <button onclick="copyText('mcfuwuqi.cc.cd:19624', 'Java域名地址已复制')">复制域名</button>
+                <button onclick="copyText('124.248.69.26:19624', 'Java备用IP地址已复制')">复制备用IP</button>
+            </div>
+        </div>
+
+        <div class="server-item">
+            <div>
+                <h3>② 基岩版 1.26.21.01 最新版本体验服（支持动作优化）</h3>
+                <p>服务端：Aternos云端纯净服｜最新官方版本｜手机/平板/主机均可游玩</p>
+                <div class="server-desc">
+                    专为体验MC最新内容打造的基岩版纯净服务器，跟随官方最新版本更新，拥有全新方块、新生物、新地形、新机制。服务器零魔改、零氪金、无复杂插件，完全保留官方原版游戏体验。本服支持两种游玩方式：原版1.26.21.01原生体验，或者切换客户端至1.26.2.101版本，加载目前最先进的动作优化资源包。装上动作优化后，奔跑、跳跃、攻击、挥砍、游泳、攀爬等全部动作拥有全新流畅动画，PVP战斗手感大幅提升，打击感更强。基础游戏内容保持原版不变，方块、生物、生成机制全部原生，不新增破坏平衡的物品，适合喜欢PVP对战、看重战斗动画效果的玩家。存档独立干净，玩法自由、生存轻松。服务器长期开放，无人在线自动休眠，管理员可随时唤醒开启。
+                </div>
+                <div class="map-desc">
+                    🗺️ 服务器地图信息：种子 <span style="color:#ffd479">-8316532587773813520</span>，基岩1.26最新版本原生随机世界。拥有全新生物群系、特色地形与新版自然结构。出生点随机生成，全地图无人工修改、无预制建筑，所有遗迹、洞穴、村庄、神殿全部自然刷新，无限原版地图自由探索。无论原版客户端还是1.26.21.01动作优化客户端，共用这一张地图存档。
+                </div>
+            </div>
+            <div class="address-box">
+                <div class="label">新版基岩连接地址</div>
+                <div class="addr">play.mcfuwuqi.cc.cd</div>
+                <div class="port">端口：47110</div>
+                <button onclick="copyText('play.mcfuwuqi.cc.cd', '新版基岩地址已复制')">复制</button>
+            </div>
+        </div>
+
+        <div class="server-item">
+            <div>
+                <h3>③ 基岩版 1.19 经典怀旧原版服</h3>
+                <p>服务端：Aternos云端怀旧服｜经典1.19版本｜幽匿时代原汁原味</p>
+                <div class="server-desc">
+                    专为老玩家打造的1.19经典怀旧服，保留幽匿方块、监守者、深暗之域等经典版本内容，回归当年最纯粹的MC体验。不跟随新版本更新、不改动原版机制，适合喜欢复古生存、怀念旧版本氛围的玩家。服务器存档独立，与新版服完全隔离，数据互不干扰，长期稳定保留怀旧玩法。
+                </div>
+                <div class="map-desc">
+                    🗺️ 服务器地图信息：种子 <span style="color:#ffd479">3015615834663148751</span>，基岩1.19原版专属世界。完美保留深暗之域、幽匿生物群系、监守者自然生成机制。出生点随机，地形自然原生态，无人工修饰，完整复刻1.19版本经典生存环境，带给老玩家原汁原味的怀旧体验。
+                </div>
+            </div>
+            <div class="address-box">
+                <div class="label">怀旧基岩连接地址</div>
+                <div class="addr">www.mcfuwuqi.cc.cd</div>
+                <div class="port">端口：42997</div>
+                <button onclick="copyText('www.mcfuwuqi.cc.cd', '旧版基岩地址已复制')">复制</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>📢 服务器公告说明</h2>
+        <ul>
+            <li>三台服务器存档完全独立，玩家数据、建筑、物品互不互通、互不干扰</li>
+            <li>Java自建服支持【域名+备用IP】双线路，域名故障可直接使用备用IP直连游玩</li>
+            <li>Java服需开启麦草联机工具才可外网访问，节点重启后IP变动，会及时更新域名解析</li>
+            <li>两台Aternos基岩云服务器无人在线自动休眠，需要管理员上线唤醒开启服务</li>
+            <li>所有服务器定期自动备份存档，最大程度避免存档丢失、损坏问题</li>
+            <li>基岩新版服支持原版1.26.21.01或1.26.2.101动作优化客户端进入，共用同一张地图</li>
+            <li>全员友好游玩，禁止炸图、恶意破坏、作弊违规，共建纯净生存环境</li>
+        </ul>
+    </section>
+
+    <section class="card">
+        <h2>📖 完整进服教程</h2>
+        <ul>
+            <li><strong>Java 1.21.11 自建服进服方式：</strong>打开我的世界Java版 → 多人游戏 → 添加服务器 → 优先填写 <span style="color:#9ce269">mcfuwuqi.cc.cd:19624</span>；域名失效可使用备用地址 <span style="color:#ffd479">124.248.69.26:19624</span> 直连进入。</li>
+            <li><strong>基岩 1.26.21.01 新版服进服方式：</strong>手机/平板/主机打开基岩版 → 新增服务器 → 地址填写 <span style="color:#9ce269">play.mcfuwuqi.cc.cd</span>，端口填写 <span style="color:#ffd479">47110</span>，保存即可进入游戏。可使用1.26.21.01原版客户端；也可以切换客户端版本至1.26.2.101，加载动作优化资源包，进入同一个服务器体验流畅战斗动画。</li>
+            <li><strong>基岩 1.19 怀旧服进服方式：</strong>基岩版1.19客户端 → 新增服务器 → 地址填写 <span style="color:#9ce269">www.mcfuwuqi.cc.cd</span>，端口填写 <span style="color:#ffd479">42997</span>，即可加入经典怀旧世界。</li>
+        </ul>
+        <div class="tip">💡 重要提示：麦草免费节点重启会更换公网IP，我们会第一时间更新域名解析；Aternos服务器重启后端口可能变动，以本站最新数据为准！动作优化资源包需要玩家本地提前准备，进入服务器不会自动加载资源包。</div>
+    </section>
+
+    <section class="card">
+        <h2>📜 服务器游玩规则</h2>
+        <ul>
+            <li>严禁使用外挂、透视、作弊客户端、刷物BUG等破坏游戏平衡的行为</li>
+            <li>禁止恶意炸图、大范围破坏他人建筑、损毁公共设施</li>
+            <li>禁止刷屏、辱骂、引战、歧视等影响社区氛围的行为</li>
+            <li>禁止利用服务器漏洞恶意刷资源、卡BUG牟利</li>
+            <li>管理员有权对违规玩家进行警告、禁言、封禁处理</li>
+        </ul>
+    </section>
+
+</main>
+
+<footer>
+    <p>MC服务器集群官网 © 2026 长期稳定开放</p>
+    <p>Java主服：mcfuwuqi.cc.cd:19624｜备用IP：124.248.69.26:19624｜基岩新版：play.mcfuwuqi.cc.cd:47110｜基岩怀旧：www.mcfuwuqi.cc.cd:42997</p>
+</footer>
+
+<script>
+    function copyText(text, tip) {
+        navigator.clipboard.writeText(text).then(function () {
+            alert(tip);
+        }).catch(function () {
+            alert('复制失败，请手动复制地址：' + text);
+        })
+    }
+</script>
+</body>
+</html>
